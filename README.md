@@ -1,22 +1,29 @@
-# Message Digest 5 in python
+# Message Digest 5 in Python
 
-this project was done in a little less than 4 days and the goal was to code the md5 hashing algorithm in python, without the aid of libraries, just to flex my skill on others.
+this project was done in a little less than 4 days.
 
-# how to does MD5 work
+The goal was to code the MD5 hashing algorithm in python, without the aid of libraries, just to flex my skill on others.
 
-md5 has 2 different phases unlike other tutorials might tell you, the first is the padding
+The implementation was written from scratch by following the official specification described in [RFC 1321](https://www.rfc-editor.org/rfc/rfc1321).
+
+# How MD5 works
+
+md5 has 2 different phases unlike other tutorials might tell you.
+
+1) Padding the message
+2) Digesting the padded message
 
 ## Padding
 
-paddin is the process of adding to a message long N bits enough bits to reach a multiple of 512 bits, from there we have 2 more components.
+Padding is the process of adding to a message of length N bits enough bits to reach a multiple of 512 bits, from there we have 2 more components.
 
-first is the actual padding, second is the message end, which is a 64 long bit number that indicates the length of the original message.
+first is the actual padding, second is the message length field, which is a 64 bit long number that indicates the length of the original message.
 
 it looks like this
 
-[message]+[padding]+[message length field]
+`[message]+[padding]+[message length field]`
 
-Everything has to be reppresented in little endian.
+The whole message has to be stored in little-endian format.
 
 The padding is just to fill space in, the first value is a 1 and all the rest are 0s.
 
@@ -24,22 +31,22 @@ The message length field is a 64 bit long number that just entails the amount of
 
 When you are searching for the padding length you need to take in consideration 2 factors.
 
-1) the padding must be at least one byte because the first byte must be 1, represented as x01 x00 in little endian
-2) the message length parameter is always 64 bits, so you need to add 64 to the amount of bits in the messagewhen youre fetching the padding length
+1) the padding must be at least one byte because the first byte must be 1, represented by the byte 0x80 followed by zeros
+2) the message length parameter is always 64 bits, so you need to add 64 to the amount of bits in the message when youre fetching the padding length
 
-ex. of point 2
+An example
 
-if he has 1000 bits and you search for the closest multiple of 512 it will find 1024 so 24 bits, you cant fit the 64 bit long message in the 24 bis available, idk why im explaining this but it mught not be obvious to someone.
+if he has 1000 bits and you search for the closest multiple of 512 it will find `1024` so 24 bits, you cant fit the 64 bit long message in the 24 bits available, idk why im explaining this but it might not be obvious to someone.
 
 just do 1000+64 you'll find 1536 as closest multiple of 512 then you just fill it up with 0s.
 
 ## digest
 
-[consult the original documentation - like i did - for more informations](https://www.rfc-editor.org/rfc/rfc1321)
+[consult the original documentation - like i did - for more information](https://www.rfc-editor.org/rfc/rfc1321)
 
-ok so once we did the padding in little endian - verry important later on - well need to define the functions and constants that will actually hash the message.
+ok so once we did the padding in little endian - very important later on - well need to define the functions and constants that will actually hash the message.
 
-fist we have
+first we have
 
 A = 0x67452301
 
@@ -51,9 +58,9 @@ D = 0x10325476
 
 these might look like some very serious numbers as if they where chosen totally not random to hash all of your data they are indeed so mathematically perfect that when you reorder them into big endian you will get 0123456789abcdef, they did not try that hard.
 
-then we weill nee to define the 4 following functions
+then we will need to define the 4 following functions
 
->F(X,Y,Z) = XY v not(X) Z
+>F(X,Y,Z) = (X AND Y) OR (NOT X AND Z)
 
 >G(X,Y,Z) = XZ v Y not(Z)
 
@@ -63,7 +70,7 @@ then we weill nee to define the 4 following functions
 
 the operations are meant to be performed bitwise.
 
-the message will get digested in 512 bit chunks and each chunk will be divided in 16 parts of wich they will be up under 64 operations, 16 operations per every function that we just defined.
+the message will get digested in 512 bit chunks and each chunk will be divided in 16 parts of which they will be up under 64 operations, 16 operations per every function that we just defined.
 
 meaning that every part will be "hashed" 4 times
 
@@ -95,25 +102,25 @@ S is just a value that does from 1 to 64.
 
 while K is a strange value that can be described only with maths.
 
-the values for K are:
+the index k is defined as:
 
 ### digest 1
 
-$\sum_{x=1}^{16} i$
+$\sum_{x=0}^{63} i$
 
 ### digest 2
 
-$\sum_{x=1}^{16} (1 + 5i) \bmod 16$
+$\sum_{x=0}^{63} (1 + 5i) \bmod 16$
 
 ### digest 3
 
-$\sum_{x=1}^{16} (5 + 3i) \bmod 16$
+$\sum_{x=0}^{63} (5 + 3i) \bmod 16$
 
 ### digest 4
 
-$\sum_{x=1}^{16} (7i) \bmod 16$
+$\sum_{x=0}^{63} (7i) \bmod 16$
 
-if you dont know what $\sum_{x=1}^{16} i$ is its the same as wrighting `[i for i in range(16)]` in python
+if you dont know what $\sum_{x=0}^{63} i$ is its the same as writing `[i for i in range(64)]` in python
 
 After processing each block, the new values are added to the old ones:
 
