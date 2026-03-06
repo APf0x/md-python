@@ -62,11 +62,11 @@ then we will need to define the 4 following functions
 
 >F(X,Y,Z) = (X AND Y) OR (NOT X AND Z)
 
->G(X,Y,Z) = XZ v Y not(Z)
+>G(X,Y,Z) = (X AND Z) OR (Y AND not(Z))
 
 >H(X,Y,Z) = X xor Y xor Z
 
->I(X,Y,Z) = Y xor (X v not(Z))
+>I(X,Y,Z) = Y xor (X OR not(Z))
 
 the operations are meant to be performed bitwise.
 
@@ -76,11 +76,11 @@ meaning that every part will be "hashed" 4 times
 
 the exact formula for the digest is
 
-a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s)
-
 ### **very important info while youre running this in a for loop you will need to change the values of ABCD between them like this**
 
 ### `A,B,C,D = B,C,D,A`
+
+a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s)
 
 Where:
 
@@ -90,7 +90,7 @@ Where:
 
     X[k] is the k‑th 32‑bit word of the message (one of the 16 words the 512‑bit chunk is divided into).
 
-    T[i] is the i‑th predefined constant (derived from the sine function).
+    T[i] is the i‑th predefined constant (derived from the sine function), you will need to search this one up
 
     <<< s is a left circular rotation by s bits.
 
